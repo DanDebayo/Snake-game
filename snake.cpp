@@ -25,9 +25,6 @@ int main()
         // Clear screen
         window.clear();
 
-        // Move the square
-        square.move(1, 0);
-
         // Draw the square
         window.draw(square);
 
