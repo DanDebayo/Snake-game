@@ -2,6 +2,7 @@
 #include <deque>
 #include <chrono>
 #include <thread>
+#include <iostream>
 
 const int BLOCK_SIZE = 10;
 const int WIDTH = 1000;
@@ -12,6 +13,43 @@ int main()
 {	
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Snake Game");// Window for the game
     window.setFramerateLimit(60);
+
+    // making the menu for the game
+    bool Menu = true;
+    while(Menu){
+    window.clear();
+    sf::Text startText;
+    sf::Font font;
+
+    if(!font.loadFromFile("Tron.ttf")){
+	    std::cout << "Unable to loadthe font file" << std::endl; 
+	    }
+    startText.setFont(font);
+    startText.setCharacterSize(48);
+    startText.setString("Snake\n\nPress space to play\n\nPress Esc to leave");
+
+    startText.setPosition(WIDTH / 2 - startText.getGlobalBounds().width /2,
+		    HEIGHT /2 - startText.getGlobalBounds().height / 2);
+
+    window.draw(startText);
+    window.display();
+
+    sf::Event event;
+    while(window.pollEvent(event)){
+
+   if (event.type == sf::Event::KeyPressed){
+
+	   if (event.key.code == sf::Keyboard::Space){
+		   Menu = false;
+   } 
+	   if(event.key.code == sf::Keyboard::Escape){
+		   window.close();
+		   return 0;
+		   }
+	    }
+	 }
+
+    }
 
     // body of the snake
     std::deque<sf::RectangleShape> snake;
