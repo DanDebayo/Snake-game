@@ -16,7 +16,8 @@ int main(){
 
     // create a rectangle shape to use as the menu background
     sf::RectangleShape menuBackground(sf::Vector2f(WIDTH, HEIGHT));
-    menuBackground.setFillColor(sf::Color(0, 128, 0)); // set the background color to green
+    menuBackground.setFillColor(sf::Color(100, 250, 50)); // set the background color to green
+    
 
     // create a font and text for the menu title
     sf::Font font;
@@ -26,18 +27,24 @@ int main(){
     }
 
     sf::Text title("Snake Game", font, 80);
-    title.setFillColor(sf::Color::Blue);
+    title.setFillColor(sf::Color::Red);
+    title.setOutlineThickness(10.f);
+    title.setOutlineColor(sf::Color(80, 37, 4));
     title.setPosition((WIDTH - title.getGlobalBounds().width) / 2, 100);
 
     // create a font and text for the play button
     sf::Text playButton("Play", font, 50);
-    playButton.setFillColor(sf::Color::Blue);
+    playButton.setFillColor(sf::Color::Red);
+    playButton.setOutlineThickness(10.f);
+    playButton.setOutlineColor(sf::Color(80, 37, 3));
     playButton.setPosition((WIDTH - playButton.getGlobalBounds().width) / 2, 300);
 
    //create a font and text for the exit button 
     sf::Text exitButton("Exit", font, 50);
     exitButton.setFillColor(sf::Color::Red);
-    exitButton.setPosition((WIDTH - exitButton.getGlobalBounds().width) / 2, 500);
+    exitButton.setOutlineThickness(10.f);
+    exitButton.setOutlineColor(sf::Color(80, 37, 8));
+    exitButton.setPosition((WIDTH - exitButton.getGlobalBounds().width) / 2, 500) ;
 
     bool startgame =false;
 
@@ -47,7 +54,7 @@ int main(){
         sf::Event event;
         while (window.pollEvent(event))
         {
-            if (event.type == sf::Event::Closed || exitButton.getGlobalBounds().contains(event.mouseButton.x, event.mouseButton.y))
+            if (event.type == sf::Event::Closed)
                 window.close();
 
             if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left)
@@ -56,7 +63,11 @@ int main(){
                 if (playButton.getGlobalBounds().contains(event.mouseButton.x, event.mouseButton.y))
                 {
                     startgame = true; // exit the menu loop and start the game
-			break;	       
+			break;
+
+              }else if (exitButton.getGlobalBounds().contains(event.mouseButton.x, event.mouseButton.y))
+                {
+                   window.close(); // exit the menu loop and exit the game      
               } 
             }
         }
@@ -66,6 +77,7 @@ int main(){
         window.draw(menuBackground); // draw the menu background first
         window.draw(title);
         window.draw(playButton);
+	window.draw(exitButton);
         window.display();
     }
 
