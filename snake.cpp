@@ -81,6 +81,27 @@ int main(){
         window.display();
     }
 
+    //create a rectangle wall
+    sf::RectangleShape wallTop(sf::Vector2f(WIDTH, HEIGHT));
+    wallTop.setSize(sf::Vector2f(WIDTH, 10.f));
+    wallTop.setFillColor(sf::Color::Blue);
+    wallTop.setPosition(0, 0);
+    
+    sf::RectangleShape wallBottom(sf::Vector2f(WIDTH, HEIGHT));
+    wallBottom.setSize(sf::Vector2f(WIDTH, 10.f));
+    wallBottom.setFillColor(sf::Color::Blue);
+    wallBottom.setPosition(0, 790);
+    
+    sf::RectangleShape wallLeft(sf::Vector2f(WIDTH, HEIGHT));
+    wallLeft.setSize(sf::Vector2f(10.f, HEIGHT));
+    wallLeft.setFillColor(sf::Color::Blue);
+    wallLeft.setPosition(0, 0);
+
+    sf::RectangleShape wallRight(sf::Vector2f(WIDTH, HEIGHT));
+    wallRight.setSize(sf::Vector2f(10.f, HEIGHT));
+    wallRight.setFillColor(sf::Color::Blue);
+    wallRight.setPosition(990, 0);
+
 
     // body of the snake
     std::deque<sf::RectangleShape> snake;
@@ -141,15 +162,20 @@ int main(){
             snake.pop_back();
         }
 
-	if (snake.front().getPosition().x < 0 || snake.front().getPosition().x >= WIDTH ||
-    	    snake.front().getPosition().y < 0 || snake.front().getPosition().y >= HEIGHT){
+        if (snake.front().getGlobalBounds().intersects(wallTop.getGlobalBounds()) || snake.front().getGlobalBounds().intersects(wallBottom.getGlobalBounds()) || 
+	    snake.front().getGlobalBounds().intersects(wallLeft.getGlobalBounds()) || snake.front().getGlobalBounds().intersects(wallRight.getGlobalBounds())){
                    std::cout << "Game Over" << std::endl;
 		   window.close();
 		   break;
-	}
+           	}
+                   
 
         // clear the window and draw the snake and food
         window.clear();
+	window.draw(wallRight);
+	window.draw(wallBottom);
+	window.draw(wallLeft);
+	window.draw(wallTop);
         window.draw(food);
         for (auto& block : snake) {
             window.draw(block);
