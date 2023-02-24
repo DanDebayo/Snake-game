@@ -81,26 +81,44 @@ int main(){
         window.display();
     }
 
-    //create a rectangle wall
+    // create the rectangular walls
+    std::vector<sf::RectangleShape> walls;
+    
     sf::RectangleShape wallTop(sf::Vector2f(WIDTH, HEIGHT));
     wallTop.setSize(sf::Vector2f(WIDTH, 10.f));
-    wallTop.setFillColor(sf::Color::Blue);
     wallTop.setPosition(0, 0);
+    walls.push_back(wallTop);
     
     sf::RectangleShape wallBottom(sf::Vector2f(WIDTH, HEIGHT));
     wallBottom.setSize(sf::Vector2f(WIDTH, 10.f));
-    wallBottom.setFillColor(sf::Color::Blue);
     wallBottom.setPosition(0, 790);
-    
+    walls.push_back(wallBottom);
+
     sf::RectangleShape wallLeft(sf::Vector2f(WIDTH, HEIGHT));
     wallLeft.setSize(sf::Vector2f(10.f, HEIGHT));
-    wallLeft.setFillColor(sf::Color::Blue);
     wallLeft.setPosition(0, 0);
+    walls.push_back(wallLeft);
 
     sf::RectangleShape wallRight(sf::Vector2f(WIDTH, HEIGHT));
     wallRight.setSize(sf::Vector2f(10.f, HEIGHT));
-    wallRight.setFillColor(sf::Color::Blue);
     wallRight.setPosition(990, 0);
+    walls.push_back(wallRight);
+	
+    //fills the rectangle 
+  //  for (auto& wall : walls){
+//	    wall.setFillColor(sf::Color::Blue);
+//	}
+
+    // Texture for the walls
+    sf::Texture texture;
+    if (!texture.loadFromFile("image2.png")){
+	    std::cout << "Failed to load texture"<< std::endl;
+    }else{
+    for (auto& wall : walls){
+	wall.setTexture(&texture);
+	wall.setTextureRect(sf::IntRect(10, 10, 100, 100));
+    }
+	    }
 
 
     // body of the snake
@@ -162,21 +180,29 @@ int main(){
             snake.pop_back();
         }
 
-        if (snake.front().getGlobalBounds().intersects(wallTop.getGlobalBounds()) || snake.front().getGlobalBounds().intersects(wallBottom.getGlobalBounds()) || 
-	    snake.front().getGlobalBounds().intersects(wallLeft.getGlobalBounds()) || snake.front().getGlobalBounds().intersects(wallRight.getGlobalBounds())){
-                   std::cout << "Game Over" << std::endl;
-		   window.close();
-		   break;
-           	}
+       // if (snake.front().getGlobalBounds().intersects(wallTop.getGlobalBounds()) || snake.front().getGlobalBounds().intersects(wallBottom.getGlobalBounds()) ||
+//	snake.front().getGlobalBounds().intersects(wallLeft.getGlobalBounds()) || snake.front().getGlobalBounds().intersects(wallRight.getGlobalBounds())){
+  //                 std::cout << "Game Over" << std::endl;
+//		   window.close();
+//		   break;
+  //         	}
+         
+           for(const auto& wall : walls){       
+	if (snake.front().getGlobalBounds().intersects(wall.getGlobalBounds())){
+		  std::cout << "Game Over"<< std::endl;
+                     window.close();
+   		     break;
+	  }
+	   }
+
                    
 
         // clear the window and draw the snake and food
         window.clear();
-	window.draw(wallRight);
-	window.draw(wallBottom);
-	window.draw(wallLeft);
-	window.draw(wallTop);
         window.draw(food);
+	for (const auto& wall : walls){
+		window.draw(wall);
+	}
         for (auto& block : snake) {
             window.draw(block);
         }
