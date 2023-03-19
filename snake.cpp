@@ -28,25 +28,26 @@ void draw_map(const std::array<std::array<Cell, MAP_WIDTH>, MAP_HEIGHT>& i_map, 
 
 
 int main(){
+	bool game_paused = false;
 
 std::array<std::string, MAP_HEIGHT> map_sketch = {
         "########################## ",
         "#                        # ",
-        "#                        # ",
-        "#                        # ",
-        "#                        # ",
-        "#     ##       ##        # ",
-        "#     ##       ##        # ",
-        "#                        # ",
-        "#                        # ",
-        "#                        # ",
-        "#    #         #         # ",
-        "#     #       #          # ",
-        "#      #######           # ",
-        "#                        # ",
-        "#                        # ",
-        "#                        # ",
-        "#                        # ",
+        "# #         #######      # ",
+        "# #         #      #     # ",
+        "# #####     #   ######   # ",
+        "#     #     #        #   # ",
+        "#     #     # #####      # ",
+        "#     #     #     #      # ",
+        "#   #         #   #      # ",
+        "#      ####   #          # ",
+        "#  #      #   #   #      # ",
+        "#    ###  #   ### #      # ",
+        "#   #            ## # ## # ",
+        "#      # # # #         # # ",
+        "#   #    #      # ###  # # ",
+        "#     #  # # ####      # # ",
+        "# #####   #   # # ###### # ",
         "#                        # ",
         "########################## "
     };
@@ -155,9 +156,18 @@ std::array<std::string, MAP_HEIGHT> map_sketch = {
         sf::Event event;
         while (window.pollEvent(event))
 	{
-            if (event.type == sf::Event::Closed)
+            if (event.type == sf::Event::Closed || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
                 window.close();
-        }
+        
+
+	//Pausing the game
+	if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::P){
+		game_paused = !game_paused;
+	}
+
+     }
+
+	if(!game_paused){
 
         //controls for the snake
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && direction != sf::Vector2i(0, 1)) {
@@ -239,6 +249,15 @@ std::array<std::string, MAP_HEIGHT> map_sketch = {
         }
         window.display();
 
+	}else{
+		sf::Text paused_text("Game Paused. Press P to resume." ,font, 40);
+                paused_text.setOutlineColor(sf::Color(85, 200, 85));
+		paused_text.setPosition((WIDTH - paused_text.getGlobalBounds().width)/2, 100);
+		window.clear();
+		window.draw(paused_text);
+		window.display();
+	}
+
 
         // pause for a short duration before moving the snake again
         std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_DURATION));
@@ -281,7 +300,7 @@ void draw_map(const std::array<std::array<Cell, MAP_WIDTH>, MAP_HEIGHT>& i_map, 
     sf::RectangleShape cell_shape(sf::Vector2f(CELL_SIZE, CELL_SIZE));
     sf::Texture cell_tex;
 
-     if (!cell_tex.loadFromFile("image2.png")){
+     if (!cell_tex.loadFromFile("image3.png")){
 	      
 	    std::cout << "Failed to load file" << std::endl;
     }else{
