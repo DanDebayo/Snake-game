@@ -1,22 +1,74 @@
+  
 #include <SFML/Graphics.hpp>
 #include <deque>
 #include <chrono>
 #include <thread>
 #include <iostream>
+#include <array>
 
 const int BLOCK_SIZE = 10;
-const int WIDTH = 1000;
-const int HEIGHT = 800;
+const int WIDTH = 800;
+const int HEIGHT = 600;
 int SLEEP_DURATION = 100;
+
+
+const char MAP_HEIGHT = 61;
+const char MAP_WIDTH = 81;
+const char CELL_SIZE = 31; // Increased CELL_SIZE for better visibility
+
+enum class Cell
+{
+    Empty,
+    Wall
+};
+
+
+std::array<std::array<Cell, MAP_WIDTH>, MAP_HEIGHT> convert_sketch(const std::array<std::string, MAP_HEIGHT>& i_map_sketch);
+void draw_map(const std::array<std::array<Cell, MAP_WIDTH>, MAP_HEIGHT>& i_map, sf::RenderWindow& i_window);
+
 
 int main(){
 
+std::array<std::string, MAP_HEIGHT> map_sketch = {
+        "########################## ",
+        "#                        # ",
+        "#                        # ",
+        "#                        # ",
+        "#                        # ",
+        "#     ##       ##        # ",
+        "#     ##       ##        # ",
+        "#                        # ",
+        "#                        # ",
+        "#                        # ",
+        "#    #         #         # ",
+        "#     #       #          # ",
+        "#      #######           # ",
+        "#                        # ",
+        "#                        # ",
+        "#                        # ",
+        "#                        # ",
+        "#                        # ",
+        "########################## "
+    };
+    std::array<std::array<Cell, MAP_WIDTH>, MAP_HEIGHT> map = convert_sketch(map_sketch);
+
     // create the window
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Snake Game");
-
-    // create a rectangle shape to use as the menu background
+    window.setFramerateLimit(60);
+  
+     // create a rectangle shape to use as the menu background
     sf::RectangleShape menuBackground(sf::Vector2f(WIDTH, HEIGHT));
     menuBackground.setFillColor(sf::Color(100, 250, 50)); // set the background color to green
+	 
+   
+    sf::Texture menutexture;
+    menutexture.setSmooth(true);
+    if (!menutexture.loadFromFile("image3.png")){
+	    std::cout << "Failed to load texture"<< std::endl;
+    }else{
+   	menuBackground.setTexture(&menutexture);
+	menuBackground.setTextureRect(sf::IntRect(10, 10, 100, 100));
+             }
     
 
     // create a font and text for the menu title
@@ -81,52 +133,14 @@ int main(){
         window.display();
     }
 
-    // create the rectangular walls
-    std::vector<sf::RectangleShape> walls;
-    
-    sf::RectangleShape wallTop(sf::Vector2f(WIDTH, HEIGHT));
-    wallTop.setSize(sf::Vector2f(WIDTH, 10.f));
-    wallTop.setPosition(0, 0);
-    walls.push_back(wallTop);
-    
-    sf::RectangleShape wallBottom(sf::Vector2f(WIDTH, HEIGHT));
-    wallBottom.setSize(sf::Vector2f(WIDTH, 10.f));
-    wallBottom.setPosition(0, 790);
-    walls.push_back(wallBottom);
-
-    sf::RectangleShape wallLeft(sf::Vector2f(WIDTH, HEIGHT));
-    wallLeft.setSize(sf::Vector2f(10.f, HEIGHT));
-    wallLeft.setPosition(0, 0);
-    walls.push_back(wallLeft);
-
-    sf::RectangleShape wallRight(sf::Vector2f(WIDTH, HEIGHT));
-    wallRight.setSize(sf::Vector2f(10.f, HEIGHT));
-    wallRight.setPosition(990, 0);
-    walls.push_back(wallRight);
-	
-    //fills the rectangle 
-  //  for (auto& wall : walls){
-//	    wall.setFillColor(sf::Color::Blue);
-//	}
-
-    // Texture for the walls
-    sf::Texture texture;
-    if (!texture.loadFromFile("image2.png")){
-	    std::cout << "Failed to load texture"<< std::endl;
-    }else{
-    for (auto& wall : walls){
-	wall.setTexture(&texture);
-	wall.setTextureRect(sf::IntRect(10, 10, 100, 100));
-    }
-	    }
-
-
+   
     // body of the snake
     std::deque<sf::RectangleShape> snake;
     sf::RectangleShape head(sf::Vector2f(BLOCK_SIZE, BLOCK_SIZE));
-    head.setFillColor(sf::Color::Green);
     head.setPosition(WIDTH / 3, HEIGHT / 3);
     snake.push_back(head);
+    
+ 
 
     //creating the food
     sf::RectangleShape food(sf::Vector2f(BLOCK_SIZE, BLOCK_SIZE));
@@ -160,9 +174,25 @@ int main(){
 
         //move the snake
         sf::RectangleShape newHead(sf::Vector2f(BLOCK_SIZE, BLOCK_SIZE));
-        newHead.setFillColor(sf::Color::Green);
-        newHead.setPosition(snake.front().getPosition() + sf::Vector2f(direction * BLOCK_SIZE));
+          newHead.setPosition(snake.front().getPosition() + sf::Vector2f(direction * BLOCK_SIZE));
         snake.push_front(newHead);
+     
+
+      //Texture for the snake
+	sf::Texture snaketexture;
+    if (!snaketexture.loadFromFile("image2.png")){
+	    std::cout << "Failed to load texture"<< std::endl;
+    }else{
+  	head.setTexture(&snaketexture);
+        head.setTextureRect(sf::IntRect(10, 10, 100, 100));
+
+	for(auto& block : snake){
+		block.setTexture(&snaketexture);		
+        block.setTextureRect(sf::IntRect(10, 10, 100, 100));
+  	    }
+    }
+   
+
 
         //check if the snake has collided with itself
         for (auto it = std::next(snake.begin()); it != snake.end(); ++it) {
@@ -173,44 +203,114 @@ int main(){
             }
         }
 
+      // check for collision with wall cells
+	if (map[(int)newHead.getPosition().y / CELL_SIZE][(int)newHead.getPosition().x / CELL_SIZE] == Cell::Wall) {
+		std::cout << "game over" << std::endl;
+	    window.close();
+            break;	    // collision detected with a wall cell, end the game or perform any other necessary action
+	}
+
+   
         //check if the snake has eaten the food
-        if (snake.front().getGlobalBounds().intersects(food.getGlobalBounds())) {
+        if(snake.front().getGlobalBounds().intersects(food.getGlobalBounds())) {
+	
             food.setPosition(rand() % (WIDTH / BLOCK_SIZE) * BLOCK_SIZE, rand() % (HEIGHT / BLOCK_SIZE) * BLOCK_SIZE);
-        } else {
-            snake.pop_back();
-        }
+	}else{
+		snake.pop_back();
+	}
 
-       // if (snake.front().getGlobalBounds().intersects(wallTop.getGlobalBounds()) || snake.front().getGlobalBounds().intersects(wallBottom.getGlobalBounds()) ||
-//	snake.front().getGlobalBounds().intersects(wallLeft.getGlobalBounds()) || snake.front().getGlobalBounds().intersects(wallRight.getGlobalBounds())){
-  //                 std::cout << "Game Over" << std::endl;
-//		   window.close();
-//		   break;
-  //         	}
-         
-           for(const auto& wall : walls){       
-	if (snake.front().getGlobalBounds().intersects(wall.getGlobalBounds())){
-		  std::cout << "Game Over"<< std::endl;
-                     window.close();
-   		     break;
-	  }
-	   }
+	//check if food land inside the walls
+	if (map[(int)food.getPosition().y / CELL_SIZE][(int)food.getPosition().x / CELL_SIZE] == Cell::Wall){
+            
+		food.setPosition(rand() % (WIDTH / BLOCK_SIZE) * BLOCK_SIZE, rand() % (HEIGHT / BLOCK_SIZE) * BLOCK_SIZE);
+	}
+		
 
-                   
+
 
         // clear the window and draw the snake and food
         window.clear();
         window.draw(food);
-	for (const auto& wall : walls){
-		window.draw(wall);
-	}
+	draw_map(map, window);
+
+	
         for (auto& block : snake) {
             window.draw(block);
         }
         window.display();
+
 
         // pause for a short duration before moving the snake again
         std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_DURATION));
     }
 
     return 0;
+}
+
+std::array<std::array<Cell, MAP_WIDTH>, MAP_HEIGHT> convert_sketch(const std::array<std::string, MAP_HEIGHT>& i_map_sketch)
+{
+    std::array<std::array<Cell, MAP_WIDTH>, MAP_HEIGHT> output_map{};
+
+    for (unsigned char a = 0; a < MAP_HEIGHT; a++)
+    {
+        for (unsigned char b = 0; b < MAP_WIDTH; b++)
+        {
+            output_map[a][b] = Cell::Empty;
+
+            switch (i_map_sketch[a][b])
+            {
+            case '#':
+                {
+                    output_map[a][b] = Cell::Wall;
+                    break;
+                }
+            default:
+                {
+                    // Do nothing, since the default value is already Cell::Empty
+                    break;
+                }
+            }
+        }
+    }
+
+    return output_map;
+}
+
+void draw_map(const std::array<std::array<Cell, MAP_WIDTH>, MAP_HEIGHT>& i_map, sf::RenderWindow& i_window)
+{
+    sf::RectangleShape cell_shape(sf::Vector2f(CELL_SIZE, CELL_SIZE));
+    sf::Texture cell_tex;
+
+     if (!cell_tex.loadFromFile("image2.png")){
+	      
+	    std::cout << "Failed to load file" << std::endl;
+    }else{
+
+                    cell_shape.setTexture(&cell_tex);
+    }
+    
+ 
+    for (unsigned char a = 0; a < MAP_HEIGHT; a++)
+    {
+        for (unsigned char b = 0; b < MAP_WIDTH; b++)
+        {
+            cell_shape.setPosition(b * CELL_SIZE, a * CELL_SIZE);
+
+            switch (i_map[a][b])
+            {
+            case Cell::Wall:
+                {
+			
+   	
+                    i_window.draw(cell_shape);
+                    break;
+                }
+            default:
+                {
+                    // Do nothing, since the default value is already Cell::Empty
+                    break;
+                }
+            }
+        }
+    }
 }
