@@ -3,6 +3,7 @@
 #include <deque>
 #include <chrono>
 #include <thread>
+#include <sstream>
 #include <iostream>
 #include <array>
 
@@ -14,7 +15,7 @@ int SLEEP_DURATION = 100;
 
 const char MAP_HEIGHT = 61;
 const char MAP_WIDTH = 81;
-const char CELL_SIZE = 31; // Increased CELL_SIZE for better visibility
+const char CELL_SIZE = 31; 
 
 enum class Cell
 {
@@ -28,28 +29,30 @@ void draw_map(const std::array<std::array<Cell, MAP_WIDTH>, MAP_HEIGHT>& i_map, 
 
 
 int main(){
+
+	int score = 0;
 	bool game_paused = false;
 
 std::array<std::string, MAP_HEIGHT> map_sketch = {
-        "########################## ",
-        "#                        # ",
-        "# #         #######      # ",
-        "# #         #      #     # ",
-        "# #####     #   ######   # ",
-        "#     #     #        #   # ",
-        "#     #     # #####      # ",
-        "#     #     #     #      # ",
-        "#   #         #   #      # ",
-        "#      ####   #          # ",
-        "#  #      #   #   #      # ",
-        "#    ###  #   ### #      # ",
-        "#   #            ## # ## # ",
-        "#      # # # #         # # ",
-        "#   #    #      # ###  # # ",
-        "#     #  # # ####      # # ",
-        "# #####   #   # # ###### # ",
-        "#                        # ",
-        "########################## "
+        "##########################",
+        "#                        #",
+        "# #         #######      #",
+        "# #         #      #     #",
+        "# #####     #   ######   #",
+        "#     #     #        #   #",
+        "#     #     # #####      #",
+        "#     #     #     #      #",
+        "#   #         #   #      #",
+        "#      ####   #          #",
+        "#  #      #   #   #      #",
+        "#    ###  #   ### #      #",
+        "#   #            ## # #  #",
+        "#      # # # #           #",
+        "#   #    #      # ###    #",
+        "#     #  # # ####        #",
+        "# #####   #   # # #####  #", 
+        "#                        #", 
+        "##########################"
     };
     std::array<std::array<Cell, MAP_WIDTH>, MAP_HEIGHT> map = convert_sketch(map_sketch);
 
@@ -166,6 +169,17 @@ std::array<std::string, MAP_HEIGHT> map_sketch = {
 	}
 
      }
+	
+
+	std::ostringstream str1;
+	str1 << score;
+	std::string score_text = str1.str();
+    
+    sf::Text Score(score_text, font, 20);
+    Score.setFillColor(sf::Color::Red);
+    Score.setOutlineColor(sf::Color(80, 37, 3));
+    Score.setPosition(0 , 0);
+
 
 	if(!game_paused){
 
@@ -225,6 +239,8 @@ std::array<std::string, MAP_HEIGHT> map_sketch = {
         if(snake.front().getGlobalBounds().intersects(food.getGlobalBounds())) {
 	
             food.setPosition(rand() % (WIDTH / BLOCK_SIZE) * BLOCK_SIZE, rand() % (HEIGHT / BLOCK_SIZE) * BLOCK_SIZE);
+	  score++; 
+
 	}else{
 		snake.pop_back();
 	}
@@ -241,7 +257,9 @@ std::array<std::string, MAP_HEIGHT> map_sketch = {
         // clear the window and draw the snake and food
         window.clear();
         window.draw(food);
+
 	draw_map(map, window);
+	window.draw(Score);
 
 	
         for (auto& block : snake) {
@@ -299,13 +317,15 @@ void draw_map(const std::array<std::array<Cell, MAP_WIDTH>, MAP_HEIGHT>& i_map, 
 {
     sf::RectangleShape cell_shape(sf::Vector2f(CELL_SIZE, CELL_SIZE));
     sf::Texture cell_tex;
-
+    
+   
      if (!cell_tex.loadFromFile("image3.png")){
 	      
 	    std::cout << "Failed to load file" << std::endl;
     }else{
 
                     cell_shape.setTexture(&cell_tex);
+                   
     }
     
  
@@ -313,15 +333,16 @@ void draw_map(const std::array<std::array<Cell, MAP_WIDTH>, MAP_HEIGHT>& i_map, 
     {
         for (unsigned char b = 0; b < MAP_WIDTH; b++)
         {
-            cell_shape.setPosition(b * CELL_SIZE, a * CELL_SIZE);
+           cell_shape.setPosition(b * CELL_SIZE, a * CELL_SIZE);
+        
 
             switch (i_map[a][b])
             {
             case Cell::Wall:
                 {
-			
-   	
-                    i_window.draw(cell_shape);
+	       
+		    i_window.draw(cell_shape);	
+
                     break;
                 }
             default:
